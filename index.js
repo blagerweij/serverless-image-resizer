@@ -13,7 +13,9 @@ exports.handler = (event, context, callback) => {
     s3.getObject({
         Bucket: origin.domainName.slice(0, -17), // remove '.s3.amazonaws.com' to get bucket
         Key: `${origin.path}${request.uri.substring(1)}`
-    }).createReadStream().pipe(convert.stdin);
+    }).createReadStream()
+        .on('error', error => context.fail(error))
+        .pipe(convert.stdin);
     const chunks = [];
     convert.stdout.on('data', chunk => chunks.push(chunk));
     convert.on('close',(code) => {
