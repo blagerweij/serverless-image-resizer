@@ -1,15 +1,14 @@
 const querystring = require('querystring');
 const spawn = require('child_process').spawn;
 const AWS = require('aws-sdk');
-const maxSize = 2000;
 const s3 = new AWS.S3({ region: 'us-east-1' });
 
 exports.handler = (event, context, callback) => {
     const request = event.Records[0].cf.request;
     const origin = request.origin.s3;
     const options = querystring.parse(request.querystring);
-    const width = Math.min(options.width || maxSize, maxSize);
-    const height = Math.min(options.height || maxSize, maxSize);
+    const width = Math.min(options.width || 1024, 1024);
+    const height = Math.min(options.height || 768, 768);
     const convert = spawn('convert', ['-', '-resize', `${width}x${height}>`, '-quality', '80', '-']);
     s3.getObject({
         Bucket: origin.domainName.slice(0, -17), // remove '.s3.amazonaws.com' to get bucket
